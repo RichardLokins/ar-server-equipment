@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    environment:
+      BEHIND_HTTPS: "1"
+      PUBLIC_ORIGIN: "https://${APP_DOMAIN:?Set APP_DOMAIN in .env}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      RECOVERY_WEBHOOK: "${RECOVERY_WEBHOOK:-}"
+      RECOVERY_SECRET: "${RECOVERY_SECRET:-}"
+    volumes:
+      - projects:/data
+    restart: unless-stopped
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      APP_DOMAIN: "${APP_DOMAIN:?Set APP_DOMAIN in .env}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+volumes:
+  projects:
+  caddy_data:
+  caddy_config:
